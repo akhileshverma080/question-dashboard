@@ -3,10 +3,7 @@ import Papa from 'papaparse';
 export const fetchQuestions = async () => {
     try {
         const response = await fetch('/master_prelims.csv');
-        const reader = response.body.getReader();
-        const result = await reader.read(); // raw array
-        const decoder = new TextDecoder('utf-8');
-        const csv = decoder.decode(result.value);
+        const csv = await response.text();
 
         return new Promise((resolve, reject) => {
             Papa.parse(csv, {
