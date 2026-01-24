@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Loader2 } from 'lucide-react';
+import { Search, Filter, Loader2, LayoutGrid, List } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
 import QuestionCard from './QuestionCard';
 
@@ -9,6 +9,7 @@ const Dashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedYear, setSelectedYear] = useState('All');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [isGridView, setIsGridView] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -91,46 +92,71 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="mt-4 text-sm text-gray-500 flex justify-between items-center">
-                        <span>Showing {filteredQuestions.length} questions</span>
-                        {(selectedYear !== 'All' || selectedCategory !== 'All' || searchTerm) && (
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setSelectedYear('All');
-                                    setSelectedCategory('All');
-                                }}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-xs uppercase"
-                            >
-                                Clear Filters
-                            </button>
-                        )}
+                    <div className="mt-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                            Showing {filteredQuestions.length} questions
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 mr-2">Layout:</span>
+                            <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+                                <button
+                                    onClick={() => setIsGridView(false)}
+                                    className={`p-1.5 rounded-md transition-all ${!isGridView ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    title="List View"
+                                >
+                                    <List className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={() => setIsGridView(true)}
+                                    className={`p-1.5 rounded-md transition-all ${isGridView ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    title="Grid View"
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            {(selectedYear !== 'All' || selectedCategory !== 'All' || searchTerm) && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setSelectedYear('All');
+                                        setSelectedCategory('All');
+                                    }}
+                                    className="ml-4 text-blue-600 hover:text-blue-800 font-medium text-xs uppercase"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </div>
+                </div >
 
                 {/* Content */}
-                {loading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
-                        <span className="ml-3 text-lg text-gray-600">Loading questions...</span>
-                    </div>
-                ) : filteredQuestions.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredQuestions.map((q, idx) => (
-                            <QuestionCard key={idx} question={q} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-white rounded-xl border border-gray-200 border-dashed">
-                        <Filter className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">No questions found</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Try adjusting your search or filters.
-                        </p>
-                    </div>
-                )}
-            </div>
-        </div>
+                {
+                    loading ? (
+                        <div className="flex justify-center items-center h-64">
+                            <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
+                            <span className="ml-3 text-lg text-gray-600">Loading questions...</span>
+                        </div>
+                    ) : filteredQuestions.length > 0 ? (
+                        <div className={isGridView ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-6"}>
+                            {filteredQuestions.map((q, idx) => (
+                                <QuestionCard key={idx} question={q} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white rounded-xl border border-gray-200 border-dashed">
+                            <Filter className="mx-auto h-12 w-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">No questions found</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Try adjusting your search or filters.
+                            </p>
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 };
 
