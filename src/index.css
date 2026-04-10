@@ -1,6 +1,41 @@
 @import "tailwindcss";
 
+:root {
+  --color-main-bg: #F9FAFB;
+  --color-card-bg: #FFFFFF;
+  --color-text-primary: #111827;
+  --color-accent: #4338CA;
+  --color-btn-bg: #0F172A;
+  --color-btn-text: #FFFFFF;
+  --color-tag-accent: #D97706;
+  --color-tag-bg: color-mix(in srgb, #D97706 10%, transparent);
+}
+
+.dark {
+  --color-main-bg: #111827;
+  --color-card-bg: #1F2937;
+  --color-text-primary: #F9FAFB;
+  --color-accent: #6366F1;
+  --color-btn-bg: #FFFFFF;
+  --color-btn-text: #111827;
+  --color-tag-accent: #FBBF24;
+  --color-tag-bg: color-mix(in srgb, #FBBF24 10%, transparent);
+}
+
+@theme {
+  --color-theme-bg: var(--color-main-bg);
+  --color-theme-card: var(--color-card-bg);
+  --color-theme-text: var(--color-text-primary);
+  --color-theme-accent: var(--color-accent);
+  --color-theme-btn: var(--color-btn-bg);
+  --color-theme-btn-text: var(--color-btn-text);
+  --color-theme-tag: var(--color-tag-accent);
+  --color-theme-tag-bg: var(--color-tag-bg);
+}
+
 body {
-  background-color: #f3f4f6;
+  background-color: var(--color-main-bg);
+  color: var(--color-text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

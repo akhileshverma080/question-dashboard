@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Loader2, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
 import QuestionCard from './QuestionCard';
 
@@ -12,6 +12,21 @@ const EXAM_OPTIONS = [
 ];
 
 const Dashboard = () => {
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('theme');
+        return savedTheme === 'dark';
+    });
+
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
+
     const [selectedExam, setSelectedExam] = useState(EXAM_OPTIONS[0]);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -94,44 +109,53 @@ const Dashboard = () => {
     const displayedQuestions = randomModeActive ? randomizedQuestions : filteredQuestions;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="min-h-screen bg-theme-bg p-4 md:p-8 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">
-                <header className="mb-8 text-center md:text-left">
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-                        {randomModeActive ? `${randomBank.label} Random Practice` : `${selectedExam.label} Question Bank`}
-                    </h1>
-                    <p className="mt-2 text-gray-600 mb-6">
-                        Search and analyze previous year questions.
-                    </p>
-                    
-                    {/* Exam Selector */}
-                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                        {EXAM_OPTIONS.map((exam) => (
-                            <button
-                                key={exam.label}
-                                onClick={() => handleExamChange(exam)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedExam.label === exam.label ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
-                            >
-                                {exam.label}
-                            </button>
-                        ))}
+                <header className="mb-8 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left gap-4">
+                    <div>
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-theme-text tracking-tight transition-colors duration-200">
+                            {randomModeActive ? `${randomBank.label} Random Practice` : `${selectedExam.label} Question Bank`}
+                        </h1>
+                        <p className="mt-2 text-theme-text opacity-70 mb-6 transition-colors duration-200">
+                            Search and analyze previous year questions.
+                        </p>
+                        
+                        {/* Exam Selector */}
+                        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                            {EXAM_OPTIONS.map((exam) => (
+                                <button
+                                    key={exam.label}
+                                    onClick={() => handleExamChange(exam)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${selectedExam.label === exam.label ? 'bg-theme-accent text-theme-btn-text shadow-md' : 'bg-theme-card text-theme-text ring-1 ring-theme-text/10 opacity-80 hover:opacity-100'}`}
+                                >
+                                    {exam.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+                    <button
+                        onClick={() => setIsDarkMode(!isDarkMode)}
+                        className="p-2 rounded-full bg-theme-card text-theme-text ring-1 ring-theme-text/10 shadow-sm hover:opacity-80 transition-colors duration-200"
+                        title="Toggle Dark Mode"
+                    >
+                        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </button>
                 </header>
 
                 {/* Practice Mode UI */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-200 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center bg-purple-50">
+                <div className="bg-theme-card p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center transition-colors duration-200 ring-1 ring-theme-text/10">
                     <div className="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto overflow-x-auto">
-                        <span className="font-semibold text-purple-900 whitespace-nowrap">Practice Mode:</span>
+                        <span className="font-semibold text-theme-text whitespace-nowrap">Practice Mode:</span>
                         <input 
                             type="number" 
                             min="1"
                             placeholder="No. of questions" 
-                            className="block w-40 px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="block w-40 px-3 py-2 bg-theme-bg text-theme-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent transition-colors duration-200"
                             value={randomN}
                             onChange={(e) => setRandomN(e.target.value)}
                         />
                         <select
-                            className="block w-40 px-3 py-2 border border-purple-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="block w-40 px-3 py-2 bg-theme-bg text-theme-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent transition-colors duration-200"
                             value={randomBank.label}
                             onChange={(e) => setRandomBank(EXAM_OPTIONS.find(o => o.label === e.target.value))}
                         >
@@ -139,7 +163,7 @@ const Dashboard = () => {
                         </select>
                         <button 
                             onClick={handleRandomize}
-                            className="whitespace-nowrap px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition"
+                            className="whitespace-nowrap px-4 py-2 bg-theme-btn text-theme-btn-text text-sm font-medium rounded-lg hover:opacity-90 transition-colors duration-200"
                         >
                             Select Random Questions
                         </button>
@@ -147,7 +171,7 @@ const Dashboard = () => {
                     {randomModeActive && (
                         <button 
                             onClick={() => setRandomModeActive(false)}
-                            className="whitespace-nowrap text-sm font-medium text-purple-600 hover:text-purple-800 underline mt-2 md:mt-0"
+                            className="whitespace-nowrap text-sm font-medium text-theme-accent hover:opacity-80 underline mt-2 md:mt-0 transition-colors duration-200"
                         >
                             Clear Practice Mode
                         </button>
@@ -155,17 +179,17 @@ const Dashboard = () => {
                 </div>
 
                 {/* Controls */}
-                <div className={`bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8 sticky top-4 z-10 backdrop-blur-md bg-opacity-90 ${randomModeActive ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className={`bg-theme-card p-4 rounded-xl shadow-sm mb-8 sticky top-4 z-10 backdrop-blur-md ring-1 ring-theme-text/10 transition-colors duration-200 ${randomModeActive ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                         {/* Search */}
                         <div className="relative w-full md:w-1/2">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-400" />
+                                <Search className="h-5 w-5 text-theme-text opacity-50" />
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
-                                placeholder="Search by keyword or question number..."
+                                className="block w-full pl-10 pr-3 py-2 bg-theme-bg text-theme-text rounded-lg leading-5 focus:outline-none focus:ring-2 focus:ring-theme-accent sm:text-sm transition-colors duration-200"
+                                placeholder="Search by keyword..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -174,7 +198,7 @@ const Dashboard = () => {
                         {/* Filters */}
                         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                             <select
-                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                className="block w-full pl-3 pr-10 py-2 text-base bg-theme-bg text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent sm:text-sm rounded-lg transition-colors duration-200"
                                 value={selectedYear}
                                 onChange={(e) => setSelectedYear(e.target.value)}
                             >
@@ -184,7 +208,7 @@ const Dashboard = () => {
                             </select>
 
                             <select
-                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                className="block w-full pl-3 pr-10 py-2 text-base bg-theme-bg text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-accent sm:text-sm rounded-lg transition-colors duration-200"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                             >
@@ -196,23 +220,23 @@ const Dashboard = () => {
                     </div>
 
                     <div className="mt-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-theme-text opacity-70 transition-colors duration-200">
                             Showing {displayedQuestions.length} questions
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500 mr-2">Layout:</span>
-                            <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+                            <span className="text-sm text-theme-text opacity-70 mr-2 transition-colors duration-200">Layout:</span>
+                            <div className="flex bg-theme-bg p-1 rounded-lg transition-colors duration-200">
                                 <button
                                     onClick={() => setIsGridView(false)}
-                                    className={`p-1.5 rounded-md transition-all ${!isGridView ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`p-1.5 rounded-md transition-all duration-200 ${!isGridView ? 'bg-theme-card shadow-sm text-theme-accent' : 'text-theme-text opacity-50 hover:opacity-100'}`}
                                     title="List View"
                                 >
                                     <List className="h-4 w-4" />
                                 </button>
                                 <button
                                     onClick={() => setIsGridView(true)}
-                                    className={`p-1.5 rounded-md transition-all ${isGridView ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`p-1.5 rounded-md transition-all duration-200 ${isGridView ? 'bg-theme-card shadow-sm text-theme-accent' : 'text-theme-text opacity-50 hover:opacity-100'}`}
                                     title="Grid View"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
@@ -227,7 +251,7 @@ const Dashboard = () => {
                                         setSelectedCategory('All');
                                         setRandomModeActive(false);
                                     }}
-                                    className="ml-4 text-blue-600 hover:text-blue-800 font-medium text-xs uppercase"
+                                    className="ml-4 text-theme-accent hover:opacity-80 font-medium text-xs uppercase transition-colors duration-200"
                                 >
                                     Clear Filters
                                 </button>
@@ -240,8 +264,8 @@ const Dashboard = () => {
                 {
                     loading ? (
                         <div className="flex justify-center items-center h-64">
-                            <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
-                            <span className="ml-3 text-lg text-gray-600">Loading questions...</span>
+                            <Loader2 className="h-12 w-12 text-theme-accent animate-spin" />
+                            <span className="ml-3 text-lg text-theme-text opacity-70 transition-colors duration-200">Loading questions...</span>
                         </div>
                     ) : displayedQuestions.length > 0 ? (
                         <div className={isGridView ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-6"}>
@@ -250,10 +274,10 @@ const Dashboard = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-white rounded-xl border border-gray-200 border-dashed">
-                            <Filter className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No questions found</h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                        <div className="text-center py-20 bg-theme-card rounded-xl border border-theme-text/20 border-dashed transition-colors duration-200">
+                            <Filter className="mx-auto h-12 w-12 text-theme-text opacity-50" />
+                            <h3 className="mt-2 text-sm font-medium text-theme-text">No questions found</h3>
+                            <p className="mt-1 text-sm text-theme-text opacity-70">
                                 Try adjusting your search or filters.
                             </p>
                         </div>

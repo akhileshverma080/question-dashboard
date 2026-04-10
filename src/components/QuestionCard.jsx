@@ -18,24 +18,26 @@ const QuestionCard = ({ question }) => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border border-gray-100 flex flex-col h-full">
-            <div className="flex justify-between items-start mb-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        <div className="bg-theme-card rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-200 ring-1 ring-theme-text/10 flex flex-col h-full">
+            <div className="flex justify-between items-start mb-4 gap-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
                     Year: {question.year}
                 </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
                     {question.question_category}
                 </span>
             </div>
 
-            <div className="mb-4 text-gray-800 text-base leading-relaxed flex-grow font-serif">
-                <span className="font-bold mr-2 text-gray-500">Q{question.question_number}.</span>
+            <div className="mb-4 text-theme-text text-base leading-relaxed flex-grow font-serif transition-colors duration-200">
+                <span className="font-bold mr-2 opacity-60">Q{question.question_number}.</span>
                 {formatText(question.question_text)}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center text-sm text-gray-500">
+            <div className="mt-4 pt-4 border-t border-theme-text/10 flex justify-between items-center text-sm text-theme-text opacity-70 transition-colors duration-200">
                 <span className="italic">{question.sub_category || 'General'}</span>
-                <span className="bg-gray-100 px-2 py-1 rounded text-xs">{question.source}</span>
+                {question.source && (
+                    <span className="bg-theme-text/5 px-2 py-1 rounded text-xs transition-colors duration-200">{question.source}</span>
+                )}
             </div>
         </div>
     );
