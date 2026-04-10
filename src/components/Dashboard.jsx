@@ -3,7 +3,16 @@ import { Search, Filter, Loader2, LayoutGrid, List } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
 import QuestionCard from './QuestionCard';
 
+const EXAM_OPTIONS = [
+    { label: 'Prelims', url: '/master_prelims.csv', type: 'Prelims' },
+    { label: 'GS Paper 1', url: '/master_mains_paper1.csv', type: 'GS Paper 1' },
+    { label: 'GS Paper 2', url: '/master_mains_paper2.csv', type: 'GS Paper 2' },
+    { label: 'GS Paper 3', url: '/master_mains_paper3.csv', type: 'GS Paper 3' },
+    { label: 'Essay', url: '/upsc_cse_mains_essay_questions.csv', type: 'Essay' },
+];
+
 const Dashboard = () => {
+    const [selectedExam, setSelectedExam] = useState(EXAM_OPTIONS[0]);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,12 +23,19 @@ const Dashboard = () => {
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
-            const data = await fetchQuestions();
+            const data = await fetchQuestions(selectedExam.url, selectedExam.type);
             setQuestions(data);
             setLoading(false);
         };
         loadData();
-    }, []);
+    }, [selectedExam]);
+
+    const handleExamChange = (exam) => {
+        setSelectedExam(exam);
+        setSearchTerm('');
+        setSelectedYear('All');
+        setSelectedCategory('All');
+    };
 
     // Extract unique filter options
     const years = useMemo(() => ['All', ...new Set(questions.map(q => q.year).filter(Boolean))].sort().reverse(), [questions]);
@@ -44,11 +60,24 @@ const Dashboard = () => {
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 text-center md:text-left">
                     <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-                        Prelims Question Bank
+                        {selectedExam.label} Question Bank
                     </h1>
-                    <p className="mt-2 text-gray-600">
+                    <p className="mt-2 text-gray-600 mb-6">
                         Search and analyze previous year questions.
                     </p>
+                    
+                    {/* Exam Selector */}
+                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                        {EXAM_OPTIONS.map((exam) => (
+                            <button
+                                key={exam.label}
+                                onClick={() => handleExamChange(exam)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedExam.label === exam.label ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
+                            >
+                                {exam.label}
+                            </button>
+                        ))}
+                    </div>
                 </header>
 
                 {/* Controls */}
