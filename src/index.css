@@ -7,8 +7,8 @@
   --color-accent: #4338CA;
   --color-btn-bg: #0F172A;
   --color-btn-text: #FFFFFF;
-  --color-tag-accent: #D97706;
-  --color-tag-bg: color-mix(in srgb, #D97706 10%, transparent);
+  --color-tag-accent: #94A3B8;
+  --color-tag-bg: color-mix(in srgb, #94A3B8 10%, transparent);
 }
 
 .dark {
@@ -18,8 +18,8 @@
   --color-accent: #6366F1;
   --color-btn-bg: #FFFFFF;
   --color-btn-text: #111827;
-  --color-tag-accent: #FBBF24;
-  --color-tag-bg: color-mix(in srgb, #FBBF24 10%, transparent);
+  --color-tag-accent: #94A3B8;
+  --color-tag-bg: color-mix(in srgb, #94A3B8 10%, transparent);
 }
 
 @theme {
