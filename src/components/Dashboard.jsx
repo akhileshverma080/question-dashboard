@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun, Download } from 'lucide-react';
+import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun, Download, Clock, X } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
 import { generatePDF } from '../utils/pdfGenerator';
 import QuestionCard from './QuestionCard';
@@ -42,6 +42,9 @@ const Dashboard = () => {
     const [randomBank, setRandomBank] = useState(EXAM_OPTIONS[0]);
     const [randomizedQuestions, setRandomizedQuestions] = useState([]);
     const [isExporting, setIsExporting] = useState(false);
+    const [isZenMode, setIsZenMode] = useState(false);
+    const [zenTimeLeft, setZenTimeLeft] = useState(0);
+    const [zenTotalTime, setZenTotalTime] = useState(0);
 
     useEffect(() => {
         const loadData = async () => {
@@ -110,6 +113,66 @@ const Dashboard = () => {
 
     const displayedQuestions = randomModeActive ? randomizedQuestions : filteredQuestions;
 
+    const calculateZenTime = (questions, examBankType) => {
+        if (examBankType === 'Prelims') {
+            return questions.length * 72;
+        }
+        
+        if (examBankType === 'Essay') {
+            return questions.length * 90 * 60;
+        }
+        
+        let totalSeconds = 0;
+        questions.forEach(q => {
+            let marks = 0;
+            if (q.source) {
+                 const match = q.source.match(/([\d.]+)\s*Marks/i);
+                 if (match) marks = parseFloat(match[1]);
+            }
+            
+            if (marks === 10) totalSeconds += 7 * 60;
+            else if (marks === 12 || marks === 12.5) totalSeconds += 9 * 60;
+            else if (marks === 15) totalSeconds += 11 * 60;
+            else if (marks === 20) totalSeconds += 15 * 60;
+            else if (marks === 250) totalSeconds += 180 * 60;
+            else totalSeconds += 8 * 60; // Fallback
+        });
+        return totalSeconds;
+    };
+
+    const startZenMode = () => {
+        const bankType = randomModeActive ? randomBank.type : selectedExam.type;
+        const totalTime = calculateZenTime(displayedQuestions, bankType);
+        setZenTotalTime(totalTime);
+        setZenTimeLeft(totalTime);
+        setIsZenMode(true);
+    };
+
+    useEffect(() => {
+        let interval = null;
+        if (isZenMode && zenTimeLeft > 0) {
+            interval = setInterval(() => {
+                setZenTimeLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        setTimeout(() => alert("Time's up!"), 100);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isZenMode, zenTimeLeft]);
+
+    const formatTime = (seconds) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
     const handleExportPDF = () => {
         if (displayedQuestions.length === 0) {
             alert("No questions to export!");
@@ -121,6 +184,36 @@ const Dashboard = () => {
             setIsExporting(false);
         }, 50); // Delay to allow spinner to paint
     };
+
+    if (isZenMode) {
+        const isLowTime = zenTimeLeft > 0 && zenTimeLeft < (zenTotalTime * 0.1);
+        return (
+            <div className="min-h-screen bg-theme-bg p-4 md:p-8 transition-colors duration-200 flex flex-col">
+                <div className="max-w-4xl mx-auto w-full">
+                    {/* Zen Header */}
+                    <div className="sticky top-0 z-50 bg-theme-bg/95 backdrop-blur py-4 mb-8 flex justify-between items-center border-b border-theme-text/10">
+                        <div className={`text-4xl md:text-5xl font-mono font-bold tracking-tight transition-colors duration-200 ${isLowTime ? 'text-red-500 animate-pulse' : 'text-theme-text'}`}>
+                            {formatTime(zenTimeLeft)}
+                        </div>
+                        <button
+                            onClick={() => setIsZenMode(false)}
+                            className="flex items-center gap-2 px-4 py-2 bg-theme-card text-theme-text ring-1 ring-theme-text/20 rounded-lg hover:opacity-80 transition-colors"
+                        >
+                            <X className="h-5 w-5" />
+                            Exit Session
+                        </button>
+                    </div>
+
+                    {/* Questions */}
+                    <div className="space-y-12 pb-24">
+                        {displayedQuestions.map((q, idx) => (
+                            <QuestionCard key={idx} question={q} isZenMode={true} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-theme-bg p-4 md:p-8 transition-colors duration-200">
@@ -192,6 +285,14 @@ const Dashboard = () => {
                             </button>
                         )}
                         <button
+                            onClick={startZenMode}
+                            disabled={displayedQuestions.length === 0}
+                            className="flex items-center gap-2 whitespace-nowrap px-4 py-2 text-theme-accent bg-theme-card ring-1 ring-theme-accent/20 text-sm font-medium rounded-lg hover:bg-theme-accent/10 disabled:opacity-50 transition-colors duration-200"
+                        >
+                            <Clock className="h-4 w-4" />
+                            Start Practice Session
+                        </button>
+                        <button
                             onClick={handleExportPDF}
                             disabled={isExporting || displayedQuestions.length === 0}
                             className="flex items-center gap-2 whitespace-nowrap px-4 py-2 bg-theme-accent text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors duration-200"
@@ -249,6 +350,15 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            <button
+                                onClick={startZenMode}
+                                disabled={displayedQuestions.length === 0}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-theme-text bg-theme-card ring-1 ring-theme-text/10 rounded-lg hover:bg-theme-text/5 disabled:opacity-50 transition-colors duration-200"
+                                title="Start a focused practice session with these questions"
+                            >
+                                <Clock className="h-4 w-4" />
+                                Start Session
+                            </button>
                             <button
                                 onClick={handleExportPDF}
                                 disabled={isExporting || displayedQuestions.length === 0}
