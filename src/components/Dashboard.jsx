@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun } from 'lucide-react';
+import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun, Download } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
+import { generatePDF } from '../utils/pdfGenerator';
 import QuestionCard from './QuestionCard';
 
 const EXAM_OPTIONS = [
@@ -40,6 +41,7 @@ const Dashboard = () => {
     const [randomN, setRandomN] = useState('');
     const [randomBank, setRandomBank] = useState(EXAM_OPTIONS[0]);
     const [randomizedQuestions, setRandomizedQuestions] = useState([]);
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -108,6 +110,18 @@ const Dashboard = () => {
 
     const displayedQuestions = randomModeActive ? randomizedQuestions : filteredQuestions;
 
+    const handleExportPDF = () => {
+        if (displayedQuestions.length === 0) {
+            alert("No questions to export!");
+            return;
+        }
+        setIsExporting(true);
+        setTimeout(async () => {
+            await generatePDF(displayedQuestions);
+            setIsExporting(false);
+        }, 50); // Delay to allow spinner to paint
+    };
+
     return (
         <div className="min-h-screen bg-theme-bg p-4 md:p-8 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">
@@ -168,14 +182,24 @@ const Dashboard = () => {
                             Select Random Questions
                         </button>
                     </div>
-                    {randomModeActive && (
-                        <button 
-                            onClick={() => setRandomModeActive(false)}
-                            className="whitespace-nowrap text-sm font-medium text-theme-accent hover:opacity-80 underline mt-2 md:mt-0 transition-colors duration-200"
+                    <div className="flex items-center gap-4 mt-4 md:mt-0">
+                        {randomModeActive && (
+                            <button 
+                                onClick={() => setRandomModeActive(false)}
+                                className="whitespace-nowrap text-sm font-medium text-theme-accent hover:opacity-80 underline transition-colors duration-200"
+                            >
+                                Clear Practice Mode
+                            </button>
+                        )}
+                        <button
+                            onClick={handleExportPDF}
+                            disabled={isExporting || displayedQuestions.length === 0}
+                            className="flex items-center gap-2 whitespace-nowrap px-4 py-2 bg-theme-accent text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors duration-200"
                         >
-                            Clear Practice Mode
+                            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            {isExporting ? 'Generating...' : 'Download PDF'}
                         </button>
-                    )}
+                    </div>
                 </div>
 
                 {/* Controls */}
@@ -225,6 +249,16 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleExportPDF}
+                                disabled={isExporting || displayedQuestions.length === 0}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-theme-accent bg-theme-accent/10 rounded-lg hover:bg-theme-accent/20 disabled:opacity-50 transition-colors duration-200 mr-2"
+                                title="Export current view to PDF"
+                            >
+                                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                Export PDF
+                            </button>
+
                             <span className="text-sm text-theme-text opacity-70 mr-2 transition-colors duration-200">Layout:</span>
                             <div className="flex bg-theme-bg p-1 rounded-lg transition-colors duration-200">
                                 <button
