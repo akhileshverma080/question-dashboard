@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun, Download, Clock, X } from 'lucide-react';
+import { Search, Filter, Loader2, LayoutGrid, List, Moon, Sun, Download, Clock, X, Bookmark } from 'lucide-react';
 import { fetchQuestions } from '../utils/csvParser';
 import { generatePDF } from '../utils/pdfGenerator';
 import QuestionCard from './QuestionCard';
@@ -45,6 +45,21 @@ const Dashboard = () => {
     const [isZenMode, setIsZenMode] = useState(false);
     const [zenTimeLeft, setZenTimeLeft] = useState(0);
     const [zenTotalTime, setZenTotalTime] = useState(0);
+    
+    // Bookmark State
+    const [savedQuestionIds, setSavedQuestionIds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('bookmarked_questions');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+    const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
+
+    useEffect(() => {
+        localStorage.setItem('bookmarked_questions', JSON.stringify(savedQuestionIds));
+    }, [savedQuestionIds]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -62,6 +77,7 @@ const Dashboard = () => {
         setSelectedYear('All');
         setSelectedCategory('All');
         setRandomModeActive(false);
+        setShowBookmarkedOnly(false);
     };
 
     const handleRandomize = async () => {
@@ -100,6 +116,10 @@ const Dashboard = () => {
     // Filter logic
     const filteredQuestions = useMemo(() => {
         return questions.filter(q => {
+            if (showBookmarkedOnly && !savedQuestionIds.includes(q.id)) {
+                return false;
+            }
+            
             const matchesSearch = (
                 q.question_text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 q.question_number?.toString().includes(searchTerm)
@@ -109,7 +129,7 @@ const Dashboard = () => {
 
             return matchesSearch && matchesYear && matchesCategory;
         });
-    }, [questions, searchTerm, selectedYear, selectedCategory]);
+    }, [questions, searchTerm, selectedYear, selectedCategory, showBookmarkedOnly, savedQuestionIds]);
 
     const displayedQuestions = randomModeActive ? randomizedQuestions : filteredQuestions;
 
@@ -183,6 +203,16 @@ const Dashboard = () => {
             await generatePDF(displayedQuestions);
             setIsExporting(false);
         }, 50); // Delay to allow spinner to paint
+    };
+
+    const handleToggleBookmark = (id) => {
+        setSavedQuestionIds(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(item => item !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
     };
 
     if (isZenMode) {
@@ -387,13 +417,23 @@ const Dashboard = () => {
                                 </button>
                             </div>
 
-                            {(selectedYear !== 'All' || selectedCategory !== 'All' || searchTerm) && (
+                            <button
+                                onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                                className={`ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${showBookmarkedOnly ? 'bg-amber-500 text-white shadow-sm' : 'text-theme-text bg-theme-bg ring-1 ring-theme-text/10 hover:bg-theme-card'}`}
+                                title="Show Saved Questions"
+                            >
+                                <Bookmark className="h-4 w-4" />
+                                Saved
+                            </button>
+
+                            {(selectedYear !== 'All' || selectedCategory !== 'All' || searchTerm || showBookmarkedOnly) && (
                                 <button
                                     onClick={() => {
                                         setSearchTerm('');
                                         setSelectedYear('All');
                                         setSelectedCategory('All');
                                         setRandomModeActive(false);
+                                        setShowBookmarkedOnly(false);
                                     }}
                                     className="ml-4 text-theme-accent hover:opacity-80 font-medium text-xs uppercase transition-colors duration-200"
                                 >
@@ -414,16 +454,34 @@ const Dashboard = () => {
                     ) : displayedQuestions.length > 0 ? (
                         <div className={isGridView ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-6"}>
                             {displayedQuestions.map((q, idx) => (
-                                <QuestionCard key={idx} question={q} />
+                                <QuestionCard 
+                                    key={q.id || idx} 
+                                    question={q} 
+                                    isZenMode={false} 
+                                    isBookmarked={savedQuestionIds.includes(q.id)}
+                                    onToggleBookmark={() => handleToggleBookmark(q.id)}
+                                />
                             ))}
                         </div>
                     ) : (
                         <div className="text-center py-20 bg-theme-card rounded-xl border border-theme-text/20 border-dashed transition-colors duration-200">
-                            <Filter className="mx-auto h-12 w-12 text-theme-text opacity-50" />
-                            <h3 className="mt-2 text-sm font-medium text-theme-text">No questions found</h3>
-                            <p className="mt-1 text-sm text-theme-text opacity-70">
-                                Try adjusting your search or filters.
-                            </p>
+                            {showBookmarkedOnly && savedQuestionIds.length === 0 ? (
+                                <>
+                                    <Bookmark className="mx-auto h-12 w-12 text-theme-text opacity-50" />
+                                    <h3 className="mt-2 text-sm font-medium text-theme-text">No Saved Questions</h3>
+                                    <p className="mt-1 text-sm text-theme-text opacity-70">
+                                        You haven't bookmarked any questions. Click the star icon on any question to save it for later.
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <Filter className="mx-auto h-12 w-12 text-theme-text opacity-50" />
+                                    <h3 className="mt-2 text-sm font-medium text-theme-text">No questions found</h3>
+                                    <p className="mt-1 text-sm text-theme-text opacity-70">
+                                        Try adjusting your search or filters.
+                                    </p>
+                                </>
+                            )}
                         </div>
                     )
                 }

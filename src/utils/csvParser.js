@@ -32,6 +32,12 @@ export const fetchQuestions = async (fileUrl = '/master_prelims.csv', examType =
                         }));
                     }
                     
+                    // Inject a fully deterministic ID for all parsed data mapped securely by position
+                    parsedData = parsedData.map((row, idx) => ({
+                        ...row,
+                        id: `${examType.replace(/\s+/g, '-')}-${idx}`
+                    }));
+                    
                     resolve(parsedData);
                 },
                 error: (error) => {

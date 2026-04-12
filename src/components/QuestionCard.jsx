@@ -1,6 +1,7 @@
 import React from 'react';
+import { Star } from 'lucide-react';
 
-const QuestionCard = ({ question, isZenMode }) => {
+const QuestionCard = ({ question, isZenMode, isBookmarked, onToggleBookmark }) => {
     // Function to preserve line breaks in question text
     const formatText = (text) => {
         if (!text) return null;
@@ -21,12 +22,21 @@ const QuestionCard = ({ question, isZenMode }) => {
         <div className={`bg-theme-card rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-200 ring-1 ring-theme-text/10 flex flex-col h-full ${isZenMode ? 'py-8' : ''}`}>
             {!isZenMode && (
                 <div className="flex justify-between items-start mb-4 gap-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
-                        Year: {question.year}
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
-                        {question.question_category}
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
+                            Year: {question.year}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-theme-tag-bg text-theme-tag ring-1 ring-theme-tag border-transparent">
+                            {question.question_category}
+                        </span>
+                    </div>
+                    <button 
+                        onClick={onToggleBookmark}
+                        className={`p-1.5 rounded-full transition-colors duration-200 ${isBookmarked ? 'text-amber-500 bg-amber-500/10' : 'text-theme-text opacity-40 hover:opacity-100 hover:bg-theme-text/5'}`}
+                        title={isBookmarked ? "Remove Bookmark" : "Save Question"}
+                    >
+                        <Star className="h-5 w-5" fill={isBookmarked ? "currentColor" : "none"} />
+                    </button>
                 </div>
             )}
 
